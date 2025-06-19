@@ -3,18 +3,49 @@ import * as api from './api.js';
 const host = 'http://localhost:3030'
 api.settings.host = 'http://localhost:3030';
 
-export const login = api.login;
-export const register = api.register;
-export const logout = api.logout;
+// Authentication functions with correct field names for tests
+export async function login(email, password) {
+    // Send both email and username for compatibility
+    const result = await api.post(host + '/users/login', { 
+        email: email, 
+        username: email, 
+        password: password 
+    });
 
+    sessionStorage.setItem('email', email);
+    sessionStorage.setItem('authToken', result.accessToken);
+    sessionStorage.setItem('userId', result._id);
+    return result;
+}
+
+export async function register(email, password) {
+    // Send both email and username for compatibility
+    const result = await api.post(host + '/users/register', { 
+        email: email, 
+        username: email, 
+        password: password 
+    });
+
+    sessionStorage.setItem('email', email);
+    sessionStorage.setItem('authToken', result.accessToken);
+    sessionStorage.setItem('userId', result._id);
+    return result;
+}
+
+export async function logout() {
+    const result = await api.get(host + '/users/logout');
+
+    sessionStorage.removeItem('email');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('userId');
+    return result;
+}
 
 //Application-specific requests
-
 
 export async function createBook(data) {
     return await api.post(host + '/data/books', data);
 }
-
 
 export async function getAllBooks() {
     return await api.get(host + '/data/books?sortBy=_createdOn%20desc');
@@ -23,7 +54,6 @@ export async function getAllBooks() {
 export async function getBookById(id) {
     return await api.get(host + '/data/books/' + id);
 }
-
 
 export async function deleteBookById(id) {
     return await api.del(host + '/data/books/' + id);
